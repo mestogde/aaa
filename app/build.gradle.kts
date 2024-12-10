@@ -60,6 +60,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.appcompat)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -86,6 +87,8 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.7.2")
     implementation("androidx.core:core-ktx:1.14.0")
     implementation("androidx.core:core:1.14.0")
+
+    implementation ("io.coil-kt:coil-compose:2.1.0")
 
 
 }

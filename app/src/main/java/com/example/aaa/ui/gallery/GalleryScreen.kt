@@ -8,145 +8,151 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.rememberAsyncImagePainter
 import com.example.aaa.R
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+
+data class Memory(
+    val eventName: String = "",
+    val description: String = "",
+    val date: String = "",
+    val location: String = "",
+    val track: String = "",
+    val images: List<String> = emptyList()
+)
 
 @Composable
 fun GalleryScreen() {
-    // Пример данных
-    val eventDate = "22.07.24"
-    val eventName = "Название события"
-    val location = "Местоположение"
-    val trackName = "Luverance"
-    val description = "Море да мы были там и красивое солнце оранжевый закат прямо в горизонт уходящее вайбик невероятный и я эту картинку скачророро по  гпппп гпмпщ нгпгнп"
+    val firestore = Firebase.firestore
+    var memories by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
 
-    // Состояние для развертывания описания
-    var isDescriptionExpanded by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        firestore.collection("memories")
+            .get()
+            .addOnSuccessListener { result ->
+                memories = result.documents.mapNotNull { it.data }
+                isLoading = false
+            }
+            .addOnFailureListener {
+                isLoading = false
+            }
+    }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    if (isLoading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+    } else if (memories.isEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Нет воспоминаний", fontSize = 16.sp)
+        }
+    } else {
         Column(
             modifier = Modifier
+                .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
-                .padding(bottom = 90.dp) // Отступ для предотвращения перекрытия с навигационным баром
         ) {
-            // Дата
-            Text(
-                text = eventDate,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 8.dp)
+            memories.forEach { memory ->
+                val eventName = memory["eventName"] as? String ?: "Без названия"
+                val date = memory["date"] as? String ?: "Не указано"
+                val description = memory["description"] as? String ?: "Описание отсутствует"
+                val location = memory["location"] as? String ?: "Не указано"
+                val track = memory["track"] as? String ?: "Не указано"
+                val imageUrls = memory["images"] as? List<String> ?: emptyList()
 
-            )
-
-            // Поле для изображений
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(4f / 5f * 1.5f)
-                    .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
-                    .background(Color.LightGray, RoundedCornerShape(8.dp))
-                    .padding(16.dp)
-            ) {
-                Text(
-                    text = "здесь должна быть картинка",
-                    color = Color.Black,
-                    fontSize = 16.sp
+                MemoryCard(
+                    eventName = eventName,
+                    date = date,
+                    description = description,
+                    location = location,
+                    track = track,
+                    imageUrls = imageUrls
                 )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Название события
-            Text(
-                text = eventName,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            // Местоположение
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    painter = painterResource(id = R.drawable.place), // Замените на ваш ресурс
-                    contentDescription = "Местоположение",
-                    tint = Color(0xFFED70A0),
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(text = location, fontSize = 16.sp)
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Поле с треком
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFFF0F0F0), RoundedCornerShape(8.dp))
-                    .padding(8.dp)
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.music), // Замените на ваш ресурс
-                    contentDescription = "Трек",
-                    tint = Color(0xFFED70A0),
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Column {
-                    Text(text = "Трек", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                    Text(text = trackName, fontSize = 14.sp)
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                Icon(
-                    painter = painterResource(id = R.drawable.music2), // Замените на ваш ресурс
-                    contentDescription = "Воспроизвести",
-                    tint = Color(0xFFED70A0),
-                    modifier = Modifier.size(32.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Поле с описанием
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFFF0F0F0), RoundedCornerShape(8.dp))
-                    .clickable { isDescriptionExpanded = !isDescriptionExpanded }
-                    .padding(8.dp)
-            ) {
-                Text(
-                    text = if (isDescriptionExpanded) description else description.take(100) + "...",
-                    fontSize = 14.sp,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Кружочки с датами
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                listOf("03.01.24", "12.09.23", "24.11.24", "25.11.24").forEach { date ->
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .background(Color(0xFFD0BFFF), CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = date, fontSize = 12.sp)
-                    }
-                }
             }
         }
+    }
+}
+
+@Composable
+fun MemoryCard(
+    eventName: String,
+    date: String,
+    description: String,
+    location: String,
+    track: String,
+    imageUrls: List<String>
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp)
+            .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
+            .background(Color.White, RoundedCornerShape(8.dp))
+            .padding(8.dp)
+    ) {
+        Text(
+            text = date,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        if (imageUrls.isNotEmpty()) {
+            Image(
+                painter = rememberAsyncImagePainter(imageUrls.first()),
+                contentDescription = "Изображение",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(4f / 5f)
+                    .clip(RoundedCornerShape(8.dp)),
+                contentScale = ContentScale.Crop
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = eventName,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
+
+        Text(
+            text = "Местоположение: $location",
+            fontSize = 14.sp,
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
+
+        Text(
+            text = "Трек: $track",
+            fontSize = 14.sp,
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
+
+        Text(
+            text = description,
+            fontSize = 14.sp,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 3,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
     }
 }

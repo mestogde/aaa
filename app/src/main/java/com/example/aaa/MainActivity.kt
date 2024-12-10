@@ -20,10 +20,20 @@ import androidx.compose.ui.unit.dp
 import com.example.aaa.ui.auth.RegistrationScreen
 import com.example.aaa.ui.gallery.AddScreen
 import com.example.aaa.ui.gallery.GalleryScreen
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
+import androidx.activity.result.contract.ActivityResultContracts
+import android.content.Intent
+import android.provider.MediaStore
+import android.content.Context
+import com.google.firebase.FirebaseApp
+import java.io.ByteArrayOutputStream
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        FirebaseApp.initializeApp(this)
         setContent {
             MainScreen()
         }

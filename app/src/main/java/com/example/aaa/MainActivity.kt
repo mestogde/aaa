@@ -18,6 +18,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.aaa.ui.auth.RegistrationScreen
+import com.example.aaa.ui.gallery.AddScreen
+import com.example.aaa.ui.gallery.GalleryScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,8 +47,8 @@ fun MainScreen() {
         when (selectedItem) {
             0 -> MapScreen()
             1 -> AddScreen()
-            2 -> BookmarkScreen()
-            3 -> RegistrationScreen() // переход к экрану регистрации
+            2 -> GalleryScreen()
+            3 -> RegistrationScreen()
         }
     }
 }
@@ -118,26 +120,6 @@ fun MapScreen() {
         contentAlignment = Alignment.Center
     ) {
         Text("Map Screen")
-    }
-}
-
-@Composable
-fun AddScreen() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text("Add Screen")
-    }
-}
-
-@Composable
-fun BookmarkScreen() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text("Bookmark Screen")
     }
 }
 

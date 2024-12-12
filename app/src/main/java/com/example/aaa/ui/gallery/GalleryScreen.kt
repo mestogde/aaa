@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.util.Log
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -24,15 +23,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import coil.ImageLoader
 import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
-import coil.request.SuccessResult
 import com.example.aaa.R
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import java.io.ByteArrayOutputStream
-import java.io.InputStream
 import java.io.File
 import java.io.FileOutputStream
 import android.Manifest
@@ -80,6 +74,7 @@ fun GalleryScreen() {
     } else {
         Column(
             modifier = Modifier
+                .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
                 .padding(bottom = 90.dp)
@@ -108,7 +103,6 @@ fun MemoryCard(memory: Memory) {
         copyUriToInternalStorage(context, Uri.parse(uri), memory.eventName)
     }
 
-
     val imagePainter = rememberAsyncImagePainter(
         model = localImageFile?.absolutePath
     )
@@ -136,7 +130,8 @@ fun MemoryCard(memory: Memory) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(4f / 5f)
-                    .clip(RoundedCornerShape(8.dp)),
+                    .clip(RoundedCornerShape(8.dp))
+                    .border(1.dp, Color.Gray, RoundedCornerShape(8.dp)),
                 contentScale = ContentScale.Crop
             )
         } else {
@@ -144,7 +139,8 @@ fun MemoryCard(memory: Memory) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(4f / 5f)
-                    .background(Color.LightGray, RoundedCornerShape(8.dp)),
+                    .background(Color.LightGray, RoundedCornerShape(8.dp))
+                    .border(1.dp, Color.Gray, RoundedCornerShape(8.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Text("Нет изображения", color = Color.Black, fontSize = 16.sp)
@@ -175,12 +171,13 @@ fun MemoryCard(memory: Memory) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Поле с треком
+        // Трек
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color(0xFFF0F0F0), RoundedCornerShape(8.dp))
+                .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
                 .padding(8.dp)
         ) {
             Icon(
@@ -198,18 +195,19 @@ fun MemoryCard(memory: Memory) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Поле с описанием
+        // Описание
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color(0xFFF0F0F0), RoundedCornerShape(8.dp))
                 .clickable { isDescriptionExpanded = !isDescriptionExpanded }
+                .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
                 .padding(8.dp)
         ) {
             Text(
-                text = if (isDescriptionExpanded) memory.description else memory.description.take(100) + "...",
+                text = if (isDescriptionExpanded) memory.description else memory.description,
                 fontSize = 14.sp,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Visible // Убираем многоточие
             )
         }
     }

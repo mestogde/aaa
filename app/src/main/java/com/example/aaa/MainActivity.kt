@@ -4,7 +4,10 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
@@ -17,18 +20,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.aaa.ui.auth.ProfileScreen
 import com.example.aaa.ui.auth.RegistrationScreen
 import com.example.aaa.ui.gallery.AddScreen
 import com.example.aaa.ui.gallery.GalleryScreen
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.util.Base64
-import androidx.activity.result.contract.ActivityResultContracts
-import android.content.Intent
-import android.provider.MediaStore
-import android.content.Context
 import com.google.firebase.FirebaseApp
-import java.io.ByteArrayOutputStream
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,6 +42,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen() {
     var selectedItem by remember { mutableStateOf(0) }
+    var currentUser by remember { mutableStateOf(FirebaseAuth.getInstance().currentUser) }
 
     Scaffold(
         bottomBar = {
@@ -53,12 +52,27 @@ fun MainScreen() {
             )
         }
     ) {
-        // Здесь можно добавить содержимое для различных экранов
+        // Переключаем экран в зависимости от выбранной вкладки
         when (selectedItem) {
             0 -> MapScreen()
             1 -> AddScreen()
             2 -> GalleryScreen()
-            3 -> RegistrationScreen()
+            3 -> {
+                if (currentUser != null) {
+                    // Если пользователь авторизован, передаем его email в ProfileScreen
+                    ProfileScreen(
+                        email = currentUser!!.email ?: "Unknown User",
+                        onSignOut = {
+                            FirebaseAuth.getInstance().signOut()
+                            // После выхода меняем состояние, чтобы вернуться на экран регистрации
+                            currentUser = null
+                        }
+                    )
+                } else {
+                    // Если нет, показываем экран регистрации
+                    RegistrationScreen()
+                }
+            }
         }
     }
 }
@@ -80,7 +94,7 @@ fun BottomNavigationBar(selectedItem: Int, onItemSelected: (Int) -> Unit) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Button for "Map" icon
+            // Кнопка карты
             IconButton(onClick = { onItemSelected(0) }) {
                 Icon(
                     imageVector = Icons.Filled.Home,
@@ -90,7 +104,7 @@ fun BottomNavigationBar(selectedItem: Int, onItemSelected: (Int) -> Unit) {
                 )
             }
 
-            // Button for "Add" icon
+            // Кнопка добавления нового воспоминания
             IconButton(onClick = { onItemSelected(1) }) {
                 Icon(
                     imageVector = Icons.Filled.Add,
@@ -100,7 +114,7 @@ fun BottomNavigationBar(selectedItem: Int, onItemSelected: (Int) -> Unit) {
                 )
             }
 
-            // Button for "Bookmark" icon
+            // Кнопка галереи
             IconButton(onClick = { onItemSelected(2) }) {
                 Icon(
                     imageVector = Icons.Filled.List,
@@ -110,7 +124,7 @@ fun BottomNavigationBar(selectedItem: Int, onItemSelected: (Int) -> Unit) {
                 )
             }
 
-            // Button for "Account" icon
+            // Кнопка профиля
             IconButton(onClick = { onItemSelected(3) }) {
                 Icon(
                     imageVector = Icons.Filled.AccountCircle,
@@ -126,15 +140,43 @@ fun BottomNavigationBar(selectedItem: Int, onItemSelected: (Int) -> Unit) {
 @Composable
 fun MapScreen() {
     Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFEDEDED))
     ) {
-        Text("Map Screen")
+        Column(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // Сообщение с текстом, не во всю ширину
+            Text(
+                text = "Извините, экран с картой ещё в разработке",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontSize = 20.sp,
+                    color = Color(0xFF333333)
+                ),
+                modifier = Modifier
+                    .padding(bottom = 16.dp)
+                    .fillMaxWidth(0.9f)
+                    .background(Color(0xFFF6D8E4), shape = RoundedCornerShape(8.dp))
+                    .border(1.dp, color = Color.Black, shape = RoundedCornerShape(8.dp))
+                    .padding(16.dp)
+            )
+
+            Text(
+                text = "🔧",
+                fontSize = 48.sp,
+                modifier = Modifier.padding(bottom = 32.dp)
+            )
+        }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
-    MainScreen()
+    RegistrationScreen()
 }

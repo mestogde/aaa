@@ -28,7 +28,6 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.aaa.R
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.launch
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,7 +55,7 @@ fun AddScreen() {
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFE6E6E6))
-            .padding(10.dp)
+            .padding(16.dp)
             .padding(bottom = 80.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -80,7 +79,7 @@ fun AddScreen() {
                         tint = Color.Black,
                         modifier = Modifier.size(40.dp)
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text("Добавьте фото", fontSize = 16.sp, color = Color.Gray)
                 }
             } else {
@@ -88,42 +87,46 @@ fun AddScreen() {
                     painter = rememberAsyncImagePainter(selectedImages.first()),
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop // Установлено для заполнения
+                    contentScale = ContentScale.Crop
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // Поля формы
+        // Блок длядобавления информациии
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
                 .clip(RoundedCornerShape(8.dp))
                 .background(color = Color.White)
-                .padding(5.dp)
+                .padding(16.dp)
         ) {
             // Название события
             TextField(
                 value = eventName,
                 onValueChange = { eventName = it },
-                placeholder = { Text("Назовите событие", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
+                placeholder = {
+                    Text(
+                        "Назовите событие",
+                        fontSize = 20.sp
+                    )
+                },
                 colors = TextFieldDefaults.textFieldColors(
                     containerColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent
                 ),
-                textStyle = LocalTextStyle.current.copy(fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                textStyle = LocalTextStyle.current.copy(fontSize = 20.sp)
             )
-            Spacer(modifier = Modifier.height(5.dp))
+            Spacer(modifier = Modifier.height(16.dp)) // Вертикальный отступ
 
             // Описание
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.clickable { isDescriptionDialogVisible = true }
             ) {
-                Spacer(modifier = Modifier.width(10.dp))
                 Text(
                     text = if (description.isEmpty()) "Добавить описание" else description,
                     fontSize = 16.sp,
@@ -135,27 +138,47 @@ fun AddScreen() {
                     onDismissRequest = { isDescriptionDialogVisible = false },
                     confirmButton = {
                         TextButton(onClick = { isDescriptionDialogVisible = false }) {
-                            Text("OK")
+                            Text("OK", color = Color(0xFFED70A0))
                         }
                     },
                     text = {
-                        Column {
-                            Text("Введите описание", fontWeight = FontWeight.Bold)
+                        Column(
+                            modifier = Modifier
+                                .border(2.dp, Color.Gray, RoundedCornerShape(12.dp))
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color.White)
+                                .padding(16.dp)
+                        ) {
+                            Text(
+                                "Введите описание",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                color = Color.Black
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
                             TextField(
                                 value = description,
                                 onValueChange = { description = it },
-                                placeholder = { Text("Добавьте описание...") }
+                                placeholder = { Text("Добавьте описание...") },
+                                colors = TextFieldDefaults.textFieldColors(
+                                    containerColor = Color(0xFFE6E6E6),
+                                    focusedIndicatorColor = Color.Gray,
+                                    unfocusedIndicatorColor = Color.Gray
+                                )
                             )
                         }
-                    }
+                    },
+                    shape = RoundedCornerShape(8.dp),
+                    containerColor = Color(0xFFE6E6E6)
                 )
             }
+            Spacer(modifier = Modifier.height(16.dp)) // Вертикальный отступ
 
-            // Добавить дату
+            // Дата
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .padding(vertical = 5.dp)
+                    .fillMaxWidth()
                     .clickable {
                         val calendar = Calendar.getInstance()
                         val datePicker = DatePickerDialog(
@@ -170,52 +193,79 @@ fun AddScreen() {
                         datePicker.show()
                     }
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.calendar),
-                    contentDescription = "Добавить дату",
-                    tint = Color(0xFFED70A0),
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(10.dp))
+
                 Text(
                     text = if (date.isEmpty()) "Добавить дату" else date,
                     fontSize = 16.sp,
-                    color = Color.Black
+                    color = Color.Black,
+                    modifier = Modifier.weight(1f)
                 )
             }
-
-            Divider(color = Color.LightGray, thickness = 1.dp)
+            Spacer(modifier = Modifier.height(18.dp))
 
             // Местоположение
-            TextField(
-                value = location,
-                onValueChange = { location = it },
-                placeholder = { Text("Добавьте местоположение", fontSize = 16.sp) },
-                colors = TextFieldDefaults.textFieldColors(
-                    containerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
-                ),
-                textStyle = LocalTextStyle.current.copy(fontSize = 16.sp)
-            )
-
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.place),
+                    contentDescription = "Местоположение",
+                    tint = Color(0xFFED70A0),
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                TextField(
+                    value = location,
+                    onValueChange = { location = it },
+                    placeholder = {
+                        Text(
+                            "Добавьте местоположение",
+                            fontSize = 16.sp,
+                            color = Color.Black
+                        )
+                    },
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    textStyle = LocalTextStyle.current.copy(fontSize = 16.sp, color = Color.Black),
+                    modifier = Modifier.weight(1f)
+                )
+            }
             Divider(color = Color.LightGray, thickness = 1.dp)
+            Spacer(modifier = Modifier.height(4.dp))
 
             // Трек
-            TextField(
-                value = track,
-                onValueChange = { track = it },
-                placeholder = { Text("Добавьте трек", fontSize = 16.sp) },
-                colors = TextFieldDefaults.textFieldColors(
-                    containerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
-                ),
-                textStyle = LocalTextStyle.current.copy(fontSize = 16.sp)
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.music),
+                    contentDescription = "Трек",
+                    tint = Color(0xFFED70A0),
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                TextField(
+                    value = track,
+                    onValueChange = { track = it },
+                    placeholder = { Text("Добавьте трек", fontSize = 16.sp, color = Color.Black) },
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    textStyle = LocalTextStyle.current.copy(fontSize = 16.sp, color = Color.Black),
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            Spacer(modifier = Modifier.height(6.dp))
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
         // Кнопка "Готово"
         OutlinedButton(
@@ -241,6 +291,7 @@ fun AddScreen() {
     }
 }
 
+
 // Проверка данных и сохранение
 fun validateAndSave(
     eventName: String,
@@ -252,13 +303,11 @@ fun validateAndSave(
     onValidationFailed: (String) -> Unit,
     onSaveSuccess: () -> Unit
 ) {
-    // Проверка на пустоту всех обязательных полей
     if (eventName.isEmpty() || description.isEmpty() || date.isEmpty() || location.isEmpty() || track.isEmpty() || selectedImages.isEmpty()) {
         onValidationFailed("Заполните все поля и добавьте фото.")
         return
     }
 
-    // Если все поля заполнены, сохраняем данные в Firestore
     val memory = hashMapOf(
         "eventName" to eventName,
         "description" to description,

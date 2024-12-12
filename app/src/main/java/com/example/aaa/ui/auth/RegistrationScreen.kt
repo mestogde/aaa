@@ -1,6 +1,5 @@
 package com.example.aaa.ui.auth
 
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -13,7 +12,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -23,10 +21,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
 import com.example.aaa.R
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
-import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun RegistrationScreen() {
@@ -36,9 +31,15 @@ fun RegistrationScreen() {
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var currentUser by remember { mutableStateOf(FirebaseAuth.getInstance().currentUser) }
 
-    // If the user is already logged in, show the profile screen
+    // Проверка, зарегистрирован ли пользователь
     if (currentUser != null) {
-        ProfileScreen(currentUser!!.email ?: "Unknown User")
+        ProfileScreen(
+            email = currentUser!!.email ?: "Unknown User",
+            onSignOut = {
+                FirebaseAuth.getInstance().signOut()
+                currentUser = null
+            }
+        )
         return
     }
 
@@ -47,7 +48,6 @@ fun RegistrationScreen() {
             .fillMaxSize()
             .background(Color.White)
     ) {
-        // Background image
         Image(
             painter = painterResource(id = R.drawable.background_image),
             contentDescription = "Background",
@@ -55,7 +55,6 @@ fun RegistrationScreen() {
             contentScale = ContentScale.Crop
         )
 
-        // Form container
         Box(
             modifier = Modifier
                 .fillMaxWidth(0.8f)
@@ -77,7 +76,7 @@ fun RegistrationScreen() {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                // Email field
+                // Почта
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
@@ -93,7 +92,7 @@ fun RegistrationScreen() {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Password field
+                // Пароль
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
@@ -108,7 +107,7 @@ fun RegistrationScreen() {
                     )
                 )
 
-                // Error message (if any)
+                // Сообщение об ошибке
                 errorMessage?.let {
                     Text(
                         text = it,
@@ -119,7 +118,7 @@ fun RegistrationScreen() {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // "Регистрация" button
+                // кнопка "Регистрация"
                 OutlinedButton(
                     onClick = {
                         if (email.isEmpty() || password.isEmpty()) {
@@ -149,7 +148,7 @@ fun RegistrationScreen() {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // "Вход" button
+                // Кнопка "Вход"
                 OutlinedButton(
                     onClick = {
                         if (email.isEmpty() || password.isEmpty()) {
@@ -221,12 +220,11 @@ fun signInUser(
 
 // Экран профиля
 @Composable
-fun ProfileScreen(email: String) {
+fun ProfileScreen(email: String, onSignOut: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
     ) {
-        // Background image
         Image(
             painter = painterResource(id = R.drawable.background_profile_image),
             contentDescription = "Background Image",
@@ -234,7 +232,6 @@ fun ProfileScreen(email: String) {
             contentScale = ContentScale.Crop
         )
 
-        // Profile content
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -242,7 +239,7 @@ fun ProfileScreen(email: String) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Avatar
+            // Аватарка
             Box(
                 modifier = Modifier
                     .size(100.dp)
@@ -255,7 +252,7 @@ fun ProfileScreen(email: String) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Email
+            // Почта
             Text(
                 text = email,
                 style = MaterialTheme.typography.bodyLarge,
@@ -264,9 +261,11 @@ fun ProfileScreen(email: String) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Logout button
+            // Кнопка выхода
             OutlinedButton(
-                onClick = { FirebaseAuth.getInstance().signOut() },
+                onClick = {
+                    onSignOut()
+                },
                 modifier = Modifier
                     .fillMaxWidth(0.6f)
                     .height(48.dp),
